@@ -38,8 +38,12 @@ def main():
     #elif parsed_args.use_mpi:
         #mpi.generate_dotplot(parsed_args.input1, parsed_args.input2, parsed_args.process_count)
     else:
-        print("Por favor, seleccione un modo de ejecución: --sequential_mode, --use_multiprocessing, o --use_mpi")
+        print("Por favor, seleccione un modo de ejecución: --use_sequential, --use_multiprocessing, o --use_mpi")
 
 
 if __name__ == "__main__":
+    main()
+
+
+if(__name__ == "__main__"):
     main()
