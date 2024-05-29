@@ -1,5 +1,5 @@
 import argparse
-from processing import sequential, multithreaded
+from processing import sequential, multithreaded, multiprocessing
 from utils.file import write_to_file
 
 def calculate_metrics(parallel_times, num_threads_list):
@@ -51,7 +51,7 @@ def main():
         for num_threads in num_threads_list:
             print(f"Ejecución con {num_threads} hilos")
             load_time, process_time, image_time, total_time = multithreaded.generate_multithreaded_dotplot(parsed_args.input1, parsed_args.input2, num_threads)
-            parallel_times.append(total_time)
+            parallel_times.append(process_time)
             write_to_file(f'results/multithreaded/results_time_multithreaded_{num_threads}.txt', [
                 f"Tiempo de carga de archivos: {load_time} segundos",
                 f"Tiempo de procesamiento: {process_time} segundos",
@@ -68,8 +68,31 @@ def main():
 
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Hilos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
-    #elif parsed_args.use_multiprocessing:
-        #multiprocessing.generate_dotplot(parsed_args.input1, parsed_args.input2)
+    elif parsed_args.use_multiprocessing:
+        num_threads_list = [1, 2, 4, 8]
+        parallel_times = []
+
+        for num_threads in num_threads_list:
+            print(f"Ejecución con {num_threads} procesos")
+            load_time, process_time, image_time, total_time = multiprocessing.generate_multiprocessing_dotplot(parsed_args.input1, parsed_args.input2, num_threads)
+            parallel_times.append(process_time)
+            write_to_file(f'results/multiprocessing/results_time_multiprocessing_{num_threads}.txt', [
+                f"Tiempo de carga de archivos: {load_time} segundos",
+                f"Tiempo de procesamiento: {process_time} segundos",
+                f"Tiempo de generación de imagen: {image_time} segundos",
+                f"Tiempo total: {total_time} segundos"
+            ])
+
+        metrics = calculate_metrics(parallel_times, num_threads_list)
+
+        metrics_content = ["Procesos, Tiempo Paralelo, Aceleración, Eficiencia"]
+        for num_threads, parallel_time, speedup, efficiency in metrics:
+            metrics_content.append(f"{num_threads}, {parallel_time}, {speedup}, {efficiency}")
+        write_to_file('results/multiprocessing/metrics_multiprocessing.txt', "\n".join(metrics_content))
+
+        for num_threads, parallel_time, speedup, efficiency in metrics:
+            print(f"Procesos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
+
     #elif parsed_args.use_mpi:
         #mpi.generate_dotplot(parsed_args.input1, parsed_args.input2, parsed_args.process_count)
     else:
