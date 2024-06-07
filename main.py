@@ -1,5 +1,5 @@
 import argparse
-from processing import sequential, multithreaded, multiprocessing
+from processing import sequential, multithreaded, multiprocessing, mpi
 from utils.file import write_to_file
 
 def calculate_metrics(parallel_times, num_threads_list):
@@ -93,8 +93,19 @@ def main():
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Procesos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
 
-    #elif parsed_args.use_mpi:
-        #mpi.generate_dotplot(parsed_args.input1, parsed_args.input2, parsed_args.process_count)
+    elif parsed_args.use_mpi:
+        num_processes = 4
+
+        load_time, process_time, image_time, total_time = mpi.generate_mpi_dotplot(parsed_args.input1, parsed_args.input2, num_processes)
+
+        write_to_file(f'results/mpi/results_time_mpi_{num_processes}.txt', [
+            f"Tiempo de carga de archivos: {load_time} segundos",
+            f"Tiempo de procesamiento: {process_time} segundos",
+            f"Tiempo de generación de imagen: {image_time} segundos",
+            f"Tiempo total: {total_time} segundos"
+        ])
+
+        print(f"Procesos: {num_processes}, Tiempo de procesamiento: {process_time} segundos")
     else:
         print("Por favor, seleccione un modo de ejecución: --sequential_mode, --use_multiprocessing, o --use_mpi")
 

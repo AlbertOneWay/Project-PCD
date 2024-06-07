@@ -1,2 +1,2 @@
-Tiempo de carga de archivos: 0.2571690082550049 segundos
-Tiempo de procesamiento: 0.658900260925293 segundos
+Tiempo de carga de archivos: 0.13025999069213867 segundos
+Tiempo de procesamiento: 15.86996078491211 segundos
