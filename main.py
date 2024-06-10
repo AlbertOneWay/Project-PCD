@@ -1,6 +1,7 @@
 import argparse
-from processing import sequential, multithreaded, multiprocessing
+from processing import sequential, multithreaded, multiprocessing, mpi
 from utils.file import write_to_file
+from utils.graficar import graphics
 from utils.drawing import plot_metrics	
 
 def calculate_metrics(parallel_times, num_threads_list):
@@ -39,8 +40,8 @@ def main():
     arg_parser.add_argument('--use_mpi', action='store_true', 
                             help='Activar la ejecución utilizando mpi4py')
 
-    arg_parser.add_argument('--process_count', dest='process_count', type=int, nargs='+', 
-                            default=[4], help='Cantidad de procesos para la ejecución con MPI')
+    arg_parser.add_argument('--plot_sppedup_mpi', action='store_true', 
+                            help='Graficar velocidades y aceleraciones en MPI4PY')
 
   
     parsed_args = arg_parser.parse_args()
@@ -100,10 +101,26 @@ def main():
 
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Procesos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
-            
+
         plot_metrics(metrics, "Multiprocessing", "results/multiprocessing")
-    #elif parsed_args.use_mpi:
-        #mpi.generate_dotplot(parsed_args.input1, parsed_args.input2, parsed_args.process_count)
+    elif parsed_args.use_mpi:
+
+        load_time, process_time, image_time, total_time, size, rank = mpi.generate_mpi_dotplot(parsed_args.input1, parsed_args.input2)
+        
+        if rank == 0:
+            write_to_file(f'results/mpi/results_time_mpi_{size}.txt', [
+                f"Tiempo de carga de archivos: {load_time} segundos",
+                f"Tiempo de procesamiento: {process_time} segundos",
+                f"Tiempo de generación de imagen: {image_time} segundos",
+                f"Tiempo total: {total_time} segundos"
+            ])
+            
+
+            print(f"Procesos: {size}, Tiempo de procesamiento: {process_time} segundos")
+    
+    elif parsed_args.plot_sppedup_mpi:
+        graphics()
+            
     else:
         print("Por favor, seleccione un modo de ejecución: --sequential_mode, --use_multiprocessing, o --use_mpi")
 

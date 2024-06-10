@@ -1,1 +1,2 @@
 python main.py --input1 data/E_coli.fna --input2 data/Salmonella.fna --use_sequential 
+mpiexec -n 4 python main.py --input1 data/E_coli.fna --input2 data/Salmonella.fna --use_mpi
