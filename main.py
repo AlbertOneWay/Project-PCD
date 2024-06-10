@@ -1,5 +1,5 @@
 import argparse
-from processing import sequential, multithreaded, multiprocessing, mpi
+from processing import sequential, multithreaded, multiprocessing, mpi, pycuda
 from utils.file import write_to_file
 from utils.graficar import graphics
 from utils.drawing import plot_metrics	
@@ -21,7 +21,6 @@ def main():
 
     arg_parser = argparse.ArgumentParser(description='Proceso de análisis de secuencias')
 
-    
     arg_parser.add_argument('--input1', dest='input1', type=str, 
                             default=None, help='Archivo de secuencia en formato FASTA')
 
@@ -42,15 +41,19 @@ def main():
 
     arg_parser.add_argument('--plot_sppedup_mpi', action='store_true', 
                             help='Graficar velocidades y aceleraciones en MPI4PY')
+    
+    arg_parser.add_argument('--use_pycuda', action='store_true', 
+                            help='Activar la ejecución utilizando PyCUDA')
 
-  
     parsed_args = arg_parser.parse_args()
 
     # Lógica para ejecutar el dotplot en función del modo seleccionado
     if parsed_args.use_sequential:
-        print("hola")
         load_time, process_time = sequential.generate_sequential_dotplot(parsed_args.input1, parsed_args.input2)
-        write_to_file('results/sequential/results_time_sequential.txt', [f"Tiempo de carga de archivos: {str(load_time)} segundos", f"Tiempo de procesamiento: {str(process_time)} segundos"])
+        write_to_file('results/sequential/results_time_sequential.txt', [
+            f"Tiempo de carga de archivos: {str(load_time)} segundos", 
+            f"Tiempo de procesamiento: {str(process_time)} segundos"
+        ])
     elif parsed_args.use_multithreaded:
         num_threads_list = [1, 2, 4, 8]
         parallel_times = []
@@ -121,9 +124,18 @@ def main():
     elif parsed_args.plot_sppedup_mpi:
         graphics()
             
-    else:
-        print("Por favor, seleccione un modo de ejecución: --sequential_mode, --use_multiprocessing, o --use_mpi")
 
+    elif parsed_args.use_pycuda:
+        print("Ejecución con PyCUDA")
+        load_time, process_time, image_time, total_time = pycuda.generate_cuda_dotplot(parsed_args.input1, parsed_args.input2)
+        write_to_file('results/pycuda/results_time_pycuda.txt', [
+            f"Tiempo de carga de archivos: {load_time} segundos",
+            f"Tiempo de procesamiento: {process_time} segundos",
+            f"Tiempo de generación de imagen: {image_time} segundos",
+            f"Tiempo total: {total_time} segundos"
+        ])
+    else:
+        print("Por favor, seleccione un modo de ejecución: --use_sequential, --use_multithreaded, --use_multiprocessing, --use_pycuda")
 
 if __name__ == "__main__":
     main()
