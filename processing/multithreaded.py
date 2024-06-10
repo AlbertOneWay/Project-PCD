@@ -35,7 +35,7 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     len_seq1 = len(sequence1)
     len_seq2 = len(sequence2)
 
-    dotplot_matrix = [[0 for _ in range(len_seq2)] for _ in range(len_seq1)]
+    dotplot_matrix = np.zeros((len_seq1, len_seq2), dtype=np.float32)
 
     # Crear hilos
     threads = []

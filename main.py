@@ -2,12 +2,18 @@ import argparse
 from processing import sequential, multithreaded, multiprocessing, mpi
 from utils.file import write_to_file
 from utils.graficar import graphics
+from utils.drawing import plot_metrics	
 
 def calculate_metrics(parallel_times, num_threads_list):
     metrics = []
-    for i in range(1, len(parallel_times)):
-        speedup = parallel_times[0] / parallel_times[i]
-        efficiency = speedup / num_threads_list[i]
+    baseline_time = parallel_times[0]  # Tiempo de referencia con 1 hilo/proceso
+    for i in range(len(parallel_times)):
+        if i == 0:
+            speedup = 1  # Aceleración base para 1 hilo/proceso
+            efficiency = 1  # Eficiencia base para 1 hilo/proceso
+        else:
+            speedup = baseline_time / parallel_times[i]
+            efficiency = speedup / num_threads_list[i]
         metrics.append((num_threads_list[i], parallel_times[i], speedup, efficiency))
     return metrics
 
@@ -69,6 +75,8 @@ def main():
 
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Hilos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
+        
+        plot_metrics(metrics, "Multithreaded", "results/multithreaded")
     elif parsed_args.use_multiprocessing:
         num_threads_list = [1, 2, 4, 8]
         parallel_times = []
@@ -94,6 +102,7 @@ def main():
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Procesos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
 
+        plot_metrics(metrics, "Multiprocessing", "results/multiprocessing")
     elif parsed_args.use_mpi:
 
         load_time, process_time, image_time, total_time, size, rank = mpi.generate_mpi_dotplot(parsed_args.input1, parsed_args.input2)
