@@ -1,12 +1,19 @@
 import argparse
-from processing import sequential, multithreaded, multiprocessing, pycuda
+from processing import sequential, multithreaded, multiprocessing, mpi, pycuda
 from utils.file import write_to_file
+from utils.graficar import graphics
+from utils.drawing import plot_metrics	
 
 def calculate_metrics(parallel_times, num_threads_list):
     metrics = []
-    for i in range(1, len(parallel_times)):
-        speedup = parallel_times[0] / parallel_times[i]
-        efficiency = speedup / num_threads_list[i]
+    baseline_time = parallel_times[0]  # Tiempo de referencia con 1 hilo/proceso
+    for i in range(len(parallel_times)):
+        if i == 0:
+            speedup = 1  # Aceleración base para 1 hilo/proceso
+            efficiency = 1  # Eficiencia base para 1 hilo/proceso
+        else:
+            speedup = baseline_time / parallel_times[i]
+            efficiency = speedup / num_threads_list[i]
         metrics.append((num_threads_list[i], parallel_times[i], speedup, efficiency))
     return metrics
 
@@ -32,8 +39,8 @@ def main():
     arg_parser.add_argument('--use_mpi', action='store_true', 
                             help='Activar la ejecución utilizando mpi4py')
 
-    arg_parser.add_argument('--process_count', dest='process_count', type=int, nargs='+', 
-                            default=[4], help='Cantidad de procesos para la ejecución con MPI')
+    arg_parser.add_argument('--plot_sppedup_mpi', action='store_true', 
+                            help='Graficar velocidades y aceleraciones en MPI4PY')
     
     arg_parser.add_argument('--use_pycuda', action='store_true', 
                             help='Activar la ejecución utilizando PyCUDA')
@@ -71,6 +78,8 @@ def main():
 
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Hilos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
+        
+        plot_metrics(metrics, "Multithreaded", "results/multithreaded")
     elif parsed_args.use_multiprocessing:
         num_threads_list = [1, 2, 4, 8]
         parallel_times = []
@@ -96,8 +105,25 @@ def main():
         for num_threads, parallel_time, speedup, efficiency in metrics:
             print(f"Procesos: {num_threads}, Tiempo Paralelo: {parallel_time} segundos, Aceleración: {speedup}, Eficiencia: {efficiency}")
 
-    #elif parsed_args.use_mpi:
-        #mpi.generate_dotplot(parsed_args.input1, parsed_args.input2, parsed_args.process_count)
+        plot_metrics(metrics, "Multiprocessing", "results/multiprocessing")
+    elif parsed_args.use_mpi:
+
+        load_time, process_time, image_time, total_time, size, rank = mpi.generate_mpi_dotplot(parsed_args.input1, parsed_args.input2)
+        
+        if rank == 0:
+            write_to_file(f'results/mpi/results_time_mpi_{size}.txt', [
+                f"Tiempo de carga de archivos: {load_time} segundos",
+                f"Tiempo de procesamiento: {process_time} segundos",
+                f"Tiempo de generación de imagen: {image_time} segundos",
+                f"Tiempo total: {total_time} segundos"
+            ])
+            
+
+            print(f"Procesos: {size}, Tiempo de procesamiento: {process_time} segundos")
+    
+    elif parsed_args.plot_sppedup_mpi:
+        graphics()
+            
 
     elif parsed_args.use_pycuda:
         print("Ejecución con PyCUDA")
