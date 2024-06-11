@@ -25,8 +25,8 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:23000]
-    sequence2 = seq2[0:23000]
+    sequence1 = seq1[0:18000]
+    sequence2 = seq2[0:18000]
     end_load_time = time.time()
 
     load_time = end_load_time - start_load_time
@@ -58,11 +58,8 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
 
     start_image_time = time.time()
 
-    # Convertir la matriz a formato numpy para aplicar el filtro
-    dotplot_matrix_np = np.array(dotplot_matrix, dtype=np.uint8)
-
     # Aplicar el filtro
-    apply_custom_filter(dotplot_matrix_np, f"results/multithreaded/dotplot_filtered{num_threads}.jpg")
+    apply_custom_filter(dotplot_matrix, f"results/multithreaded/dotplot_filtered{num_threads}.jpg")
 
     draw_dotplot(dotplot_matrix, f'results/multithreaded/dotplot{num_threads}.jpg')
 

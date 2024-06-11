@@ -29,8 +29,8 @@ def generate_multiprocessing_dotplot(file1, file2, num_processes=4):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:23000]
-    sequence2 = seq2[0:23000]
+    sequence1 = seq1[0:18000]
+    sequence2 = seq2[0:18000]
     end_load_time = time.time()
 
     load_time = end_load_time - start_load_time
@@ -46,10 +46,8 @@ def generate_multiprocessing_dotplot(file1, file2, num_processes=4):
 
     start_image_time = time.time()
 
-    dotplot_matrix_np = np.array(dotplot_matrix, dtype=np.uint8)
-
     # Aplicar el filtro
-    apply_custom_filter(dotplot_matrix_np, f"results/multiprocessing/dotplot_filtered{num_processes}.jpg")
+    apply_custom_filter(dotplot_matrix, f"results/multiprocessing/dotplot_filtered{num_processes}.jpg")
 
     draw_dotplot(dotplot_matrix, f'results/multiprocessing/dotplot{num_processes}.jpg')
 

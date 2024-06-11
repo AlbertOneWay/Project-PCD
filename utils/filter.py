@@ -1,19 +1,22 @@
-import cv2
+from scipy.signal import convolve2d
 import numpy as np
 import multiprocessing as mp
+from utils.drawing import draw_dotplot
+
+def find_diagonals(matrix):
+    kernel = np.eye(3, dtype=int)  # Kernel para encontrar diagonales
+    convolved = convolve2d(matrix, kernel, mode='valid')
+    filtered_matrix = (convolved == 3).astype(int)
+    return filtered_matrix
 
 def process_chunk_with_margin(chunk, margin):
     chunk_with_margin = np.pad(chunk, pad_width=((margin, margin), (margin, margin)), mode='constant', constant_values=0)
-    
-    diag_kernel = np.array([[1, -1, -1],
-                            [-1, 1, -1],
-                            [-1, -1, 1]])
-    filtered_chunk_with_margin = cv2.filter2D(chunk_with_margin, -1, diag_kernel)
-    
-    filtered_chunk = filtered_chunk_with_margin[margin:-margin, margin:-margin]
+    filtered_chunk = find_diagonals(chunk_with_margin)
     return filtered_chunk
 
-def apply_custom_filter(matrix, output_path, num_processes=8):
+def apply_custom_filter(matrix, outpath, num_processes=8):
+    if not isinstance(matrix, np.ndarray):
+        matrix = np.array(matrix)
     margin = 1  
 
     chunk_height = matrix.shape[0] // num_processes
@@ -23,13 +26,5 @@ def apply_custom_filter(matrix, output_path, num_processes=8):
         filtered_chunks = pool.starmap(process_chunk_with_margin, [(chunk, margin) for chunk in chunks])
 
     filtered_matrix = np.vstack(filtered_chunks)
-
-    normalized_matrix = cv2.normalize(filtered_matrix, None, 0, 127, cv2.NORM_MINMAX)
-
-    threshold_level = 50
-    _, binary_matrix = cv2.threshold(normalized_matrix, threshold_level, 255, cv2.THRESH_BINARY)
-
-    cv2.imwrite(output_path, binary_matrix)
-    ##cv2.imshow('Filtered Dotplot', binary_matrix)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    
+    draw_dotplot(filtered_matrix, outpath)

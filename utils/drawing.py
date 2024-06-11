@@ -8,6 +8,7 @@ def draw_dotplot(dotplot, img_name='dotplot.jpg'):
     plt.ylabel('Secuencia 1')
     plt.savefig(img_name)
     #plt.show()
+    plt.close()
 
 def plot_metrics(metrics, title_prefix, output_file_prefix):
     num_threads = [m[0] for m in metrics]
