@@ -3,6 +3,7 @@ import numpy as np
 from utils.file import read_FASTA
 from utils.drawing import draw_dotplot
 from utils.filter import apply_custom_filter
+from tqdm import tqdm
 
 def generate_sequential_dotplot(file1, file2):
 
@@ -11,8 +12,8 @@ def generate_sequential_dotplot(file1, file2):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:10000]
-    sequence2 = seq2[0:10000]
+    sequence1 = seq1[0:23000]
+    sequence2 = seq2[0:23000]
     end_time = time.time()
 
     load_time = end_time - start_time
@@ -24,7 +25,7 @@ def generate_sequential_dotplot(file1, file2):
 
     dotplot_matrix = np.zeros((len_seq1, len_seq2), dtype=np.float32)
 
-    for i in range(len_seq1):
+    for i in tqdm(range(len_seq1)):
         for j in range(len_seq2):
             if sequence1[i] == sequence2[j]:
                 if i == j:
@@ -34,7 +35,7 @@ def generate_sequential_dotplot(file1, file2):
             else:
                 dotplot_matrix[i][j]  = 0
             
-        print(f'Progreso: {i+1}/{len_seq1} filas completadas')
+        ##print(f'Progreso: {i+1}/{len_seq1} filas completadas')
     end_process = time.time()
     process_time = end_process - start_process
     

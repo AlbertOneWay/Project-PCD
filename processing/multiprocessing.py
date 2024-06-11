@@ -29,8 +29,8 @@ def generate_multiprocessing_dotplot(file1, file2, num_processes=4):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:10000]
-    sequence2 = seq2[0:10000]
+    sequence1 = seq1[0:23000]
+    sequence2 = seq2[0:23000]
     end_load_time = time.time()
 
     load_time = end_load_time - start_load_time

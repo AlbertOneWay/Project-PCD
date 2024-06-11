@@ -4,10 +4,11 @@ import threading
 from utils.file import read_FASTA
 from utils.drawing import draw_dotplot
 from utils.filter import apply_custom_filter
+from tqdm import tqdm
 
 def worker(sequence1, sequence2, dotplot_matrix, start, end):
     """Función de trabajador para calcular una parte del dotplot."""
-    for i in range(start, end):
+    for i in tqdm(range(start, end), desc=f"Hilo {start//(end-start) + 1}"):
         for j in range(len(sequence2)):
             if sequence1[i] == sequence2[j]:
                 if i == j:
@@ -16,7 +17,7 @@ def worker(sequence1, sequence2, dotplot_matrix, start, end):
                     dotplot_matrix[i][j] = 0.7
             else:
                 dotplot_matrix[i][j] = 0
-        print(f'Progreso: {i+1}/{end} filas completadas')
+        ##print(f'Progreso:  {i+1}/{end} filas completadas')
 
 def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     # Medir tiempo de carga de archivos
@@ -24,8 +25,8 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:10000]
-    sequence2 = seq2[0:10000]
+    sequence1 = seq1[0:23000]
+    sequence2 = seq2[0:23000]
     end_load_time = time.time()
 
     load_time = end_load_time - start_load_time
