@@ -3,7 +3,6 @@ import numpy as np
 from utils.file import read_FASTA
 from utils.drawing import draw_dotplot
 from utils.filter import apply_custom_filter
-from tqdm import tqdm
 
 def generate_sequential_dotplot(file1, file2):
 
