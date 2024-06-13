@@ -7,6 +7,8 @@ Este documento presenta un análisis de rendimiento de diversas implementaciones
 ## Inicio
 
 ## Prerequisitos
+NOTA: Para que se pueda instalar la libreria pycuda es necesario tener ya instalado cuda toolkit.
+
 ### 1. Creamos el entrono virtual
 
 virtualenv venv
@@ -82,14 +84,14 @@ python main.py --input1 data/sequence1.fasta --input2 data/sequence2.fasta --use
 Este comando ejecutará el análisis utilizando multithreading y generará los archivos de resultados en el directorio results/multithreaded.
 
 ## Estructura de Archivos
-data/: Directorio donde se almacenan los archivos de entrada en formato FASTA.
-processing/: Directorio donde están las diferentes versiones para generar el dotplot.
-results/: Directorio donde se almacenarán los resultados de las ejecuciones.
+data/: Directorio donde se almacenan los archivos de entrada en formato FASTA.<br>
+processing/: Directorio donde están las diferentes versiones para generar el dotplot.<br>
+results/: Directorio donde se almacenarán los resultados de las ejecuciones.<br>
 * mpi/
 * multiprocessing/
 * multithreaded/
 * pycuda/
-* sequential/
-utils/: Directorio con los archivos que tienen funciones utilizadas en la mayoria de versiones (Cargar archivos, crear imagen, filtrar imagen, graficas)
+* sequential/<br>
+utils/: Directorio con los archivos que tienen funciones utilizadas en la mayoria de versiones (Cargar archivos, crear imagen, filtrar imagen, graficas)<br><br>
 
 Asegúrate de ajustar las rutas de los archivos según tu estructura de directorios.
