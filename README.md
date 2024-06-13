@@ -6,20 +6,7 @@ Este documento presenta un análisis de rendimiento de diversas implementaciones
 
 ## Inicio
 
-Para clonar el proyecto desde GitHub, sigue estos pasos:
-
-Abre tu terminal o línea de comandos.
-Navega al directorio donde deseas clonar el proyecto.
-Ejecuta el siguiente comando:
-```bash
-git clone https://github.com/AlbertOneWay/Project-PCD.git
-```
-Entra en el directorio del proyecto clonado:
-```bash
-cd Project-PCD
-```
-Instala las dependencias necesarias utilizando pip:
-Esto descargará y configurará todo el proyecto en tu máquina local, listo para ser ejecutado o modificado según tus necesidades.
+Any additional information goes here
 
 
 ## Prerequisitos
@@ -97,6 +84,4 @@ results/: Directorio donde se almacenarán los resultados de las ejecuciones.
 * multiprocessing/
 * mpi/
 data/: Directorio donde se almacenan los archivos de entrada en formato FASTA.
-processing/: Directorio donde se almacenan las funciones que realizan cada procedimiento.
 Asegúrate de ajustar las rutas de los archivos según tu estructura de directorios.
-
