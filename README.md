@@ -6,9 +6,6 @@ Este documento presenta un análisis de rendimiento de diversas implementaciones
 
 ## Inicio
 
-Any additional information goes here
-
-
 ## Prerequisitos
 ### 1. Creamos el entrono virtual
 
@@ -62,7 +59,14 @@ Para ejecutar el análisis de secuencias utilizando MPI, asegúrate de tener mpi
 mpiexec -n <num_procesos> python main.py --input1 <ruta_a_tu_archivo_fasta1> --input2 <ruta_a_tu_archivo_fasta2> --use_mpi
 ```
 
-### E. Opciones Adicionales
+### E. Ejecución con PyCUDA
+Para ejecutar el análisis de secuencias utilizando PyCUDA, utiliza el siguiente comando:
+
+```bash
+python main.py --input1 <ruta_a_tu_archivo_fasta1> --input2 <ruta_a_tu_archivo_fasta2> --use_pycuda
+```
+
+### F. Opciones Adicionales
 Para graficar las velocidades y aceleraciones en MPI, utiliza:
 ```bash
 python main.py --plot_speedup_mpi
@@ -78,10 +82,14 @@ python main.py --input1 data/sequence1.fasta --input2 data/sequence2.fasta --use
 Este comando ejecutará el análisis utilizando multithreading y generará los archivos de resultados en el directorio results/multithreaded.
 
 ## Estructura de Archivos
-results/: Directorio donde se almacenarán los resultados de las ejecuciones.
-*   sequential/
-* multithreaded/
-* multiprocessing/
-* mpi/
 data/: Directorio donde se almacenan los archivos de entrada en formato FASTA.
+processing/: Directorio donde están las diferentes versiones para generar el dotplot.
+results/: Directorio donde se almacenarán los resultados de las ejecuciones.
+* mpi/
+* multiprocessing/
+* multithreaded/
+* pycuda/
+* sequential/
+utils/: Directorio con los archivos que tienen funciones utilizadas en la mayoria de versiones (Cargar archivos, crear imagen, filtrar imagen, graficas)
+
 Asegúrate de ajustar las rutas de los archivos según tu estructura de directorios.
