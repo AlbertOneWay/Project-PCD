@@ -17,8 +17,8 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:25000]
-    sequence2 = seq2[0:25000]
+    sequence1 = seq1[0:20000]
+    sequence2 = seq2[0:20000]
 
     seq1 = None
     seq2 = None

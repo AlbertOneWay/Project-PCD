@@ -1,4 +1,4 @@
-Tiempo de carga de archivos: 0.2990834712982178 segundos
-Tiempo de procesamiento: 4.85518479347229 segundos
-Tiempo de generación de imagen: 25.42104172706604 segundos
-Tiempo total: 30.575309991836548 segundos
+Tiempo de carga de archivos: 0.17084074020385742 segundos
+Tiempo de procesamiento: 2.3622307777404785 segundos
+Tiempo de generaciÃ³n de imagen: 10.314908981323242 segundos
+Tiempo total: 12.847980499267578 segundos

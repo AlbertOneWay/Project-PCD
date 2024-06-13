@@ -1,6 +1,6 @@
 import os
 import matplotlib.pyplot as plt
-##import pycuda.driver as cuda
+import pycuda.driver as cuda
 
 def graphics():
     tiempos_procesamiento = []
@@ -62,7 +62,7 @@ def graphics():
     plt.legend()
     plt.savefig('results/mpi_metrics_eficiencia.jpg')
     plt.show()
-"""
+
 def get_cuda_cores():
     cuda.init()
     device = cuda.Device(0)
@@ -107,7 +107,8 @@ def graph_pycuda():
         else:
             eficiencia = aceleracion / cuda_cores  # Usamos núcleos CUDA para PyCUDA
         eficiencias.append(eficiencia)
-
+    
+    plt.clf()
     labels = ['Secuencial', 'PyCUDA']
     plt.bar(labels, tiempos_procesamiento, color=['green', 'orange'])
     plt.title('Tiempo de Procesamiento usando PyCUDA')
@@ -133,4 +134,4 @@ def graph_pycuda():
     for i, v in enumerate(eficiencias):
         plt.text(i, v + 0.5, f'{v:.2f}', ha='center', va='bottom')
     plt.savefig('Eficiencia.jpg')
-    plt.clf()"""
+    plt.clf()

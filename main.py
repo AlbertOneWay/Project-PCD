@@ -1,7 +1,8 @@
 import argparse
-from processing import sequential, multithreaded, multiprocessing, mpi
+from processing import sequential, multithreaded, multiprocessing, mpi, pycuda
 from utils.file import write_to_file
 from utils.graficar import graphics
+from utils import graficar
 from utils.drawing import plot_metrics, graphics_times	
 
 def calculate_metrics(parallel_times, num_threads_list):
@@ -131,14 +132,14 @@ def main():
 
     elif parsed_args.use_pycuda:
         print("Ejecución con PyCUDA")
-        ##load_time, process_time, image_time, total_time = pycuda.generate_cuda_dotplot(parsed_args.input1, parsed_args.input2)
+        load_time, process_time, image_time, total_time = pycuda.generate_cuda_dotplot(parsed_args.input1, parsed_args.input2)
         write_to_file('results/pycuda/results_time_pycuda.txt', [
             f"Tiempo de carga de archivos: {load_time} segundos",
             f"Tiempo de procesamiento: {process_time} segundos",
             f"Tiempo de generación de imagen: {image_time} segundos",
             f"Tiempo total: {total_time} segundos"
         ])
-        #graficar.graph_pycuda()
+        graficar.graph_pycuda()
     else:
         print("Por favor, seleccione un modo de ejecución: --use_sequential, --use_multithreaded, --use_multiprocessing, --use_pycuda")
 

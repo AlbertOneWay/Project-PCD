@@ -64,8 +64,8 @@ def generate_cuda_dotplot(file1, file2):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:20890]
-    sequence2 = seq2[0:20890]
+    sequence1 = seq1[0:21000]
+    sequence2 = seq2[0:21000]
 
     seq1 = None
     seq2 = None
@@ -91,7 +91,7 @@ def generate_cuda_dotplot(file1, file2):
     gc.collect()
 
     # Definir número de partes
-    num_parts = 2
+    num_parts = 1
 
     # Dividir secuencias en partes
     parts_sequence1 = np.array_split(sequence1_numeric, num_parts)

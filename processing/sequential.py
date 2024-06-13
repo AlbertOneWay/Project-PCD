@@ -11,8 +11,8 @@ def generate_sequential_dotplot(file1, file2):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:25000]
-    sequence2 = seq2[0:25000]
+    sequence1 = seq1[0:20000]
+    sequence2 = seq2[0:20000]
     end_time = time.time()
 
     load_time = end_time - start_time

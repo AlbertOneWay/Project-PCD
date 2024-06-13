@@ -4,9 +4,9 @@ import multiprocessing as mp
 from utils.drawing import draw_dotplot
 
 def find_diagonals(matrix):
-    kernel = np.eye(3, dtype=int)  # Kernel para encontrar diagonales
+    kernel = np.eye(3, dtype=np.uint8)  # Kernel para encontrar diagonales
     convolved = convolve2d(matrix, kernel, mode='valid')
-    filtered_matrix = (convolved == 3).astype(int)
+    filtered_matrix = (convolved == 3).astype(np.uint8)
     return filtered_matrix
 
 def process_chunk_with_margin(chunk, margin):

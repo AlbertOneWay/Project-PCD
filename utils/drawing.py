@@ -34,7 +34,7 @@ def plot_metrics(metrics, title_prefix, output_file_prefix):
 
     plt.tight_layout()
     plt.savefig(f'{output_file_prefix}_metrics.png')
-    plt.show()
+    #plt.show()
 
 
 def graphics_times():
@@ -93,4 +93,4 @@ def graphics_times():
     plt.title('Comparación de Tiempos de Procesamiento')
     plt.grid(True)
     plt.legend()
-    plt.show()
+    #plt.show()
