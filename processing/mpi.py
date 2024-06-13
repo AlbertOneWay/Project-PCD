@@ -1,24 +1,13 @@
 from mpi4py import MPI
 import numpy as np
-import time
 from utils.file import read_FASTA
 from utils.drawing import draw_dotplot
 from utils.filter import apply_custom_filter
+import time
 
-def worker_mpi(sequence1_chunk, sequence2):
-    dotplot = []
-    for i, seq1_char in enumerate(sequence1_chunk):
-        row = []
-        for j, seq2_char in enumerate(sequence2):
-            if seq1_char == seq2_char:
-                if i == j:
-                    row.append(1)
-                else:
-                    row.append(0.7)
-            else:
-                row.append(0)
-        dotplot.append(row)
-    return dotplot
+def worker(sequence1_chunk, sequence2_numeric):
+    dotplot_chunk = np.equal.outer(sequence1_chunk, sequence2_numeric).astype(np.uint8)
+    return dotplot_chunk
 
 def generate_mpi_dotplot(file1, file2):
     comm = MPI.COMM_WORLD
@@ -30,51 +19,53 @@ def generate_mpi_dotplot(file1, file2):
         seq1 = read_FASTA(file1)
         seq2 = read_FASTA(file2)
 
-        sequence1 = seq1[:18000]
-        sequence2 = seq2[:18000]
+        sequence1 = seq1[0:25000]
+        sequence2 = seq2[0:25000]
         end_load_time = time.time()
+
         load_time = end_load_time - start_load_time
         print(f"Tiempo de carga de archivos: {load_time} segundos")
 
-        chunk_size = len(sequence1) // size
-        extra = len(sequence1) % size
-        chunk_sizes = [chunk_size + 1 if i < extra else chunk_size for i in range(size)]
-        chunks = [sequence1[sum(chunk_sizes[:i]):sum(chunk_sizes[:i + 1])] for i in range(size)]
+        base_mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+        sequence1_numeric = np.array([base_mapping[base] for base in sequence1], dtype=np.uint8)
+        sequence2_numeric = np.array([base_mapping[base] for base in sequence2], dtype=np.uint8)
+
+        len_seq1 = len(sequence1_numeric)
+        len_seq2 = len(sequence2_numeric)
+
+        chunk_size = len_seq1 // size
     else:
-        sequence2 = None
-        chunk_sizes = None
-        chunks = None
-        load_time = None
+        sequence1_numeric = None
+        sequence2_numeric = None
+        chunk_size = None
+        len_seq1 = None
 
-    sequence2 = comm.bcast(sequence2, root=0)
-    chunk_sizes = comm.bcast(chunk_sizes, root=0)
+    sequence1_numeric = comm.bcast(sequence1_numeric, root=0)
+    sequence2_numeric = comm.bcast(sequence2_numeric, root=0)
+    chunk_size = comm.bcast(chunk_size, root=0)
+    len_seq1 = comm.bcast(len_seq1, root=0)
 
-    local_chunk = comm.scatter(chunks, root=0)
+    start = rank * chunk_size
+    end = len_seq1 if rank == size - 1 else (rank + 1) * chunk_size
+    sequence1_chunk = sequence1_numeric[start:end]
 
     start_process_time = time.time()
+    dotplot_chunk = worker(sequence1_chunk, sequence2_numeric)
+    end_process_time = time.time()
 
-    local_dotplot = worker_mpi(local_chunk, sequence2)
+    process_time = end_process_time - start_process_time
 
-    all_dotplots = comm.gather(local_dotplot, root=0)
+    dotplot_matrix = None
+    if rank == 0:
+        dotplot_matrix = np.zeros((len_seq1, len_seq2), dtype=np.uint8)
+
+    comm.Gatherv(sendbuf=dotplot_chunk, recvbuf=dotplot_matrix, root=0)
 
     if rank == 0:
-        dotplot_matrix = [row for sublist in all_dotplots for row in sublist]
-
-        end_process_time = time.time()
-        process_time = end_process_time - start_process_time
-
-        start_image_time = time.time()
-
-        dotplot_matrix_np = np.array(dotplot_matrix, dtype=np.uint8)
-
-        # Aplicar el filtro
-        apply_custom_filter(dotplot_matrix_np, f"results/mpi/dotplot_filtered{size}.jpg")
+        apply_custom_filter(dotplot_matrix, f"results/mpi/dotplot_filtered{size}.jpg")
         draw_dotplot(dotplot_matrix, f'results/mpi/dotplot{size}.jpg')
 
-        end_image_time = time.time()
-        image_time = end_image_time - start_image_time
-
-        total_time = load_time + process_time + image_time
-        return load_time, process_time, image_time, total_time, size, rank
+        total_time = load_time + process_time
+        return load_time, process_time, total_time, size, rank
     else:
-        return None, None, None, None, None, None
+        return None, None, None, None, None

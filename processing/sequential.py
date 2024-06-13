@@ -12,28 +12,22 @@ def generate_sequential_dotplot(file1, file2):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:18000]
-    sequence2 = seq2[0:18000]
+    sequence1 = seq1[0:25000]
+    sequence2 = seq2[0:25000]
     end_time = time.time()
 
     load_time = end_time - start_time
+
+     # Convertir secuencias a arrays de números
+    base_mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+    sequence1_numeric = np.array([base_mapping[base] for base in sequence1], dtype=np.uint8)
+    sequence2_numeric = np.array([base_mapping[base] for base in sequence2], dtype=np.uint8)
+
     print(f"Tiempo de carga de archivos: {load_time} segundos")
 
     start_process = time.time()
-    len_seq1 = len(sequence1)
-    len_seq2 = len(sequence2)
 
-    dotplot_matrix = np.zeros((len_seq1, len_seq2), dtype=np.float32)
-
-    for i in tqdm(range(len_seq1)):
-        for j in range(len_seq2):
-            if sequence1[i] == sequence2[j]:
-                if i == j:
-                    dotplot_matrix[i][j] = 1
-                else:
-                    dotplot_matrix[i][j]  = 0.7
-            else:
-                dotplot_matrix[i][j]  = 0
+    dotplot_matrix = np.equal.outer(sequence1_numeric, sequence2_numeric).astype(np.uint8)
             
         ##print(f'Progreso: {i+1}/{len_seq1} filas completadas')
     end_process = time.time()

@@ -3,6 +3,7 @@ import numpy as np
 from utils.file import read_FASTA
 from utils.drawing import draw_dotplot
 from utils.filter import apply_custom_filter
+import gc
 
 import pycuda.autoinit
 import pycuda.driver as drv
@@ -22,17 +23,13 @@ def parallel_cuda_dotplot(sequence1, sequence2):
 
     # Compilar el código CUDA
     mod = SourceModule("""
-        __global__ void dotplot(unsigned char *sequence1, unsigned char *sequence2, float *dotplot) {
+        __global__ void dotplot(unsigned char *sequence1, unsigned char *sequence2, unsigned char *dotplot) {
             int i = blockIdx.x * blockDim.x + threadIdx.x;
             int j = blockIdx.y * blockDim.y + threadIdx.y;
                        
             if (i < %(N)d && j < %(M)d) {
                 if (sequence1[i] == sequence2[j]) {
-                    if (i == j) {
-                        dotplot[i * %(M)d + j] = 1;
-                    } else {
-                        dotplot[i * %(M)d + j] = 0.7;
-                    }
+                    dotplot[i * %(M)d + j] = 1;
                 } else {
                     dotplot[i * %(M)d + j] = 0;
                 }
@@ -56,7 +53,7 @@ def parallel_cuda_dotplot(sequence1, sequence2):
     kernel(sequence1_gpu, sequence2_gpu, dotplot_gpu, block=(block_size_x, block_size_y, 1), grid=(grid_x, grid_y))
 
     # Copiar los resultados de la GPU
-    dotplot = np.zeros((N, M), dtype=np.float32)
+    dotplot = np.zeros((N, M), dtype=np.uint8)
     drv.memcpy_dtoh(dotplot, dotplot_gpu)
 
     return dotplot
@@ -67,8 +64,16 @@ def generate_cuda_dotplot(file1, file2):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:1000]
-    sequence2 = seq2[0:1000]
+    sequence1 = seq1[0:20890]
+    sequence2 = seq2[0:20890]
+
+    seq1 = None
+    seq2 = None
+
+    file1 = None
+    file2 = None
+    gc.collect()
+
     end_load_time = time.time()
 
     load_time = end_load_time - start_load_time
@@ -81,8 +86,36 @@ def generate_cuda_dotplot(file1, file2):
     sequence1_numeric = np.array([base_mapping[base] for base in sequence1], dtype=np.uint8)
     sequence2_numeric = np.array([base_mapping[base] for base in sequence2], dtype=np.uint8)
 
-    # Generar el dotplot en paralelo usando CUDA
-    dotplot_matrix = parallel_cuda_dotplot(sequence1_numeric, sequence2_numeric)
+    sequence1 = None
+    sequence2 = None
+    gc.collect()
+
+    # Definir número de partes
+    num_parts = 2
+
+    # Dividir secuencias en partes
+    parts_sequence1 = np.array_split(sequence1_numeric, num_parts)
+
+    sequence1_numeric = None
+    gc.collect()
+
+    # Lista para almacenar partes del dotplot
+    dotplot_parts = []
+
+    # Generar el dotplot en paralelo usando CUDA para cada parte
+    for part_num in range(num_parts):
+        dotplot_part = parallel_cuda_dotplot(parts_sequence1[part_num], sequence2_numeric)
+        dotplot_parts.append(dotplot_part)
+        dotplot_part = None
+        gc.collect()
+
+    # Combinar las partes en un solo dotplot
+    dotplot_matrix = np.concatenate(dotplot_parts, axis=0, dtype=np.uint8)
+
+    dotplot_parts = None
+
+    gc.collect()
+
 
     end_process_time = time.time()
     process_time = end_process_time - start_process_time
@@ -94,7 +127,7 @@ def generate_cuda_dotplot(file1, file2):
     draw_dotplot(dotplot_matrix, "results/pycuda/dotplot.jpg")
 
     # Aplicar el filtro
-    apply_custom_filter(dotplot_matrix.astype(np.uint8), "results/pycuda/dotplot_filtered.jpg")
+    apply_custom_filter(dotplot_matrix, "results/pycuda/dotplot_filtered.jpg")
 
     end_image_time = time.time()
     image_time = end_image_time - start_image_time

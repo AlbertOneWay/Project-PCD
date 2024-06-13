@@ -111,13 +111,12 @@ def main():
         plot_metrics(metrics, "Multiprocessing", "results/multiprocessing")
     elif parsed_args.use_mpi:
 
-        load_time, process_time, image_time, total_time, size, rank = mpi.generate_mpi_dotplot(parsed_args.input1, parsed_args.input2)
+        load_time, process_time, total_time, size, rank = mpi.generate_mpi_dotplot(parsed_args.input1, parsed_args.input2)
         
         if rank == 0:
             write_to_file(f'results/mpi/results_time_mpi_{size}.txt', [
                 f"Tiempo de carga de archivos: {load_time} segundos",
                 f"Tiempo de procesamiento: {process_time} segundos",
-                f"Tiempo de generación de imagen: {image_time} segundos",
                 f"Tiempo total: {total_time} segundos"
             ])
             

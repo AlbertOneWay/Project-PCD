@@ -4,20 +4,12 @@ import threading
 from utils.file import read_FASTA
 from utils.drawing import draw_dotplot
 from utils.filter import apply_custom_filter
-from tqdm import tqdm
+import gc
 
-def worker(sequence1, sequence2, dotplot_matrix, start, end):
+def worker(sequence1_chunk, sequence2_numeric, dotplot_matrix, start_index):
     """Función de trabajador para calcular una parte del dotplot."""
-    for i in tqdm(range(start, end), desc=f"Hilo {start//(end-start) + 1}"):
-        for j in range(len(sequence2)):
-            if sequence1[i] == sequence2[j]:
-                if i == j:
-                    dotplot_matrix[i][j] = 1
-                else:
-                    dotplot_matrix[i][j] = 0.7
-            else:
-                dotplot_matrix[i][j] = 0
-        ##print(f'Progreso:  {i+1}/{end} filas completadas')
+    dotplot_chunk = np.equal.outer(sequence1_chunk, sequence2_numeric).astype(np.uint8)
+    dotplot_matrix[start_index:start_index + len(sequence1_chunk), :] = dotplot_chunk
 
 def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     # Medir tiempo de carga de archivos
@@ -25,18 +17,34 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     seq1 = read_FASTA(file1)
     seq2 = read_FASTA(file2)
 
-    sequence1 = seq1[0:18000]
-    sequence2 = seq2[0:18000]
+    sequence1 = seq1[0:25000]
+    sequence2 = seq2[0:25000]
+
+    seq1 = None
+    seq2 = None
+    file1 = None
+    file2 = None
+    gc.collect()
+
     end_load_time = time.time()
 
     load_time = end_load_time - start_load_time
     print(f"Tiempo de carga de archivos: {load_time} segundos")
 
-    start_process_time = time.time()
-    len_seq1 = len(sequence1)
-    len_seq2 = len(sequence2)
+    # Convertir secuencias a arrays de números
+    base_mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+    sequence1_numeric = np.array([base_mapping[base] for base in sequence1], dtype=np.uint8)
+    sequence2_numeric = np.array([base_mapping[base] for base in sequence2], dtype=np.uint8)
 
-    dotplot_matrix = np.zeros((len_seq1, len_seq2), dtype=np.float32)
+    sequence1 = None
+    sequence2 = None
+    gc.collect()
+
+    start_process_time = time.time()
+    len_seq1 = len(sequence1_numeric)
+    len_seq2 = len(sequence2_numeric)
+
+    dotplot_matrix = np.zeros((len_seq1, len_seq2), dtype=np.uint8)
 
     # Crear hilos
     threads = []
@@ -45,7 +53,8 @@ def generate_multithreaded_dotplot(file1, file2, num_threads=4):
     for i in range(num_threads):
         start = i * chunk_size
         end = len_seq1 if i == num_threads - 1 else (i + 1) * chunk_size
-        thread = threading.Thread(target=worker, args=(sequence1, sequence2, dotplot_matrix, start, end))
+        sequence1_chunk = sequence1_numeric[start:end]
+        thread = threading.Thread(target=worker, args=(sequence1_chunk, sequence2_numeric, dotplot_matrix, start))
         threads.append(thread)
         thread.start()
 
